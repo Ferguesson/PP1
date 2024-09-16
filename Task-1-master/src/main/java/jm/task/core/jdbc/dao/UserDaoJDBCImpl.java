@@ -10,11 +10,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-//DAO stands for Data Access Object
 public class UserDaoJDBCImpl implements UserDao {
 
     //Singleton
-    private static UserDaoJDBCImpl USER_DAO_JDBC;
+    private static final UserDaoJDBCImpl INSTANCE = new UserDaoJDBCImpl();
 
     //SQL finals.
     public static final String CREATE_USERS_TABLE = """
@@ -60,15 +59,12 @@ public class UserDaoJDBCImpl implements UserDao {
 
     //Singleton getter.
     public static UserDaoJDBCImpl getInstance() {
-        if (USER_DAO_JDBC == null) {
-            USER_DAO_JDBC = new UserDaoJDBCImpl();
-        }
-        return USER_DAO_JDBC;
+        return INSTANCE;
     }
 
 
     public void createUsersTable() {
-        try (Connection connection = Util.open();
+        try (Connection connection = Util.openJDBCSession();
              PreparedStatement preparedStatement = connection.prepareStatement(CREATE_USERS_TABLE)) {
 
 
@@ -80,7 +76,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void dropUsersTable() {
-        try (Connection connection = Util.open();
+        try (Connection connection = Util.openJDBCSession();
              PreparedStatement preparedStatement = connection.prepareStatement(DROP_USERS_TABLE)) {
 
             preparedStatement.executeUpdate();
@@ -91,7 +87,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        try (Connection connection = Util.open();
+        try (Connection connection = Util.openJDBCSession();
              PreparedStatement preparedStatement = connection.prepareStatement(SAVE_USER_SQL)) {
 
             preparedStatement.setString(1, name);
@@ -106,7 +102,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void removeUserById(long id) {
-        try (Connection connection = Util.open();
+        try (Connection connection = Util.openJDBCSession();
              PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_SQL)) {
 
             preparedStatement.setLong(1, id);
@@ -121,7 +117,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
 
-        try (Connection connection = Util.open();
+        try (Connection connection = Util.openJDBCSession();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_USERS)) {
 
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -131,20 +127,20 @@ public class UserDaoJDBCImpl implements UserDao {
             }
 
         } catch (SQLException e) {
-            System.out.println("Error getting all users. The table may be empty or not exist.");
+            System.out.println("Error getting all users. The table may be empty or does not exist.");
         }
 
         return users;
     }
 
     public void cleanUsersTable() {
-        try (Connection connection = Util.open();
+        try (Connection connection = Util.openJDBCSession();
              PreparedStatement preparedStatement = connection.prepareStatement(DROP_USERS_TABLE)) {
 
             preparedStatement.executeUpdate();
-            System.out.println("Dropped table users");
+            System.out.println("Cleared table users");
         } catch (SQLException e) {
-            System.out.println("Error cleaning table users. The table may be empty or not exist.");
+            System.out.println("Error clearing table users. The table may be empty or does not exist.");
         }
 
     }
