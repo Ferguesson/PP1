@@ -135,7 +135,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void cleanUsersTable() {
         try (Connection connection = Util.openJDBCSession();
-             PreparedStatement preparedStatement = connection.prepareStatement(DROP_USERS_TABLE)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(TRUNCATE_USERS_TABLE)) {
 
             preparedStatement.executeUpdate();
             System.out.println("Cleared table users");
